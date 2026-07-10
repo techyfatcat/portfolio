@@ -1,40 +1,160 @@
-<<<<<<< HEAD
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<h1 align="center">⚽ Aadit's 3D Football Portfolio</h1>
 
-## Getting Started
 
-First, run the development server:
+<p align="center">
+  <b>A cinematic 3D developer portfolio inspired by football stadiums, built with Next.js and React Three Fiber.</b>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react" />
+  <img src="https://img.shields.io/badge/Three.js-000000?logo=three.js" />
+  <img src="https://img.shields.io/badge/React%20Three%20Fiber-3D-orange" />
+  <img src="https://img.shields.io/badge/TailwindCSS-4-38BDF8?logo=tailwindcss" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript" />
+</p>
+
+---
+
+## 📖 About
+
+Welcome to my interactive football-inspired portfolio.Every section is designed to feel like a football experience—from dramatic camera movements and stadium lighting to immersive transitions and animated player cards.
+
+This portfolio showcases my skills, projects, and passion for creating visually engaging web experiences using modern frontend technologies.
+
+---
+
+## ✨ Features
+
+* ⚽ Interactive 3D Football Stadium
+* 🎥 Cinematic Camera Animations
+* 🌌 HDR Environment & Dynamic Lighting
+* 🏟️ Procedural Stadium Components
+* 🎮 Smooth User Navigation
+* 📱 Responsive Design
+* 🎴 FIFA-style About Cards
+* 💼 Project Showcase
+* 🛠️ Skills Section
+* 📬 Contact Overlay
+* 🎵 Stadium Theme Music
+* ⚡ Optimized Asset Loading
+* 🌙 Modern Glassmorphism UI
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+* Next.js
+* React
+* TypeScript
+* Tailwind CSS
+
+### 3D & Graphics
+
+* Three.js
+* React Three Fiber
+* Drei
+* Postprocessing
+
+### State Management
+
+* Zustand
+
+### Animation
+
+* Framer Motion
+
+---
+
+## 📂 Project Structure
+
+```text
+src/
+│
+├── app/
+├── animations/
+├── components/
+│   ├── camera/
+│   ├── canvas/
+│   ├── scene/
+│   ├── stadium/
+│   ├── world/
+│   ├── ui/
+│   ├── about/
+│   ├── skills/
+│   └── overlays/
+│
+├── data/
+├── lib/
+└── store/
+
+public/
+├── audio/
+├── hdri/
+├── models/
+└── textures/
+```
+
+---
+
+## 🚀 Getting Started
+
+Clone the repository
+
+```bash
+git clone https://github.com/techyfatcat/portfolio.git
+```
+
+Move into the project
+
+```bash
+cd portfolio
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Run the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open your browser at
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🎯 Highlights
 
-To learn more about Next.js, take a look at the following resources:
+* Interactive football stadium
+* Realistic lighting
+* Camera-directed storytelling
+* Custom player cards
+* Project modal system
+* Modular architecture
+* Performance optimized rendering
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🌐 Live Demo
 
-## Deploy on Vercel
+Coming Soon...
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
-# portfolio
->>>>>>> 9657f0017ef303cda8a669bee51c122d147d46ab
+## ⭐ Support
+
+If you like this project, consider giving it a ⭐ on GitHub!
+
+It motivates me to build more exciting open-source projects.
+
+
