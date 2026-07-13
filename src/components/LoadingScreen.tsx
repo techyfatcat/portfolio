@@ -236,7 +236,6 @@ export default function LoadingScreen() {
             marginTop: 36,
           }}
         >
-          {/* pitch outline + halfway line + center circle */}
           <svg
             width="220"
             height="300"
@@ -272,7 +271,6 @@ export default function LoadingScreen() {
             <circle cx="110" cy="150" r="2" fill={PITCH_LINE} />
           </svg>
 
-          {/* players */}
           {FORMATION.map((p) => {
             const active = progress >= p.activateAt;
             return (
@@ -304,7 +302,6 @@ export default function LoadingScreen() {
           })}
         </div>
 
-        {/* ---------------- Halfway-line progress ---------------- */}
         <div
           style={{
             position: "relative",
@@ -320,7 +317,6 @@ export default function LoadingScreen() {
               background: PITCH_LINE,
             }}
           >
-            {/* center circle marker on the track */}
             <div
               style={{
                 position: "absolute",
@@ -333,7 +329,6 @@ export default function LoadingScreen() {
                 transform: "translate(-50%, -50%)",
               }}
             />
-            {/* the ball, travelling left to right */}
            
           </div>
         </div>

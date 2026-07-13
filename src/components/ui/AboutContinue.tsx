@@ -82,7 +82,6 @@ export default function AboutContinue() {
         }}
       >
         Continue to Skills
-        <span style={{ fontSize: 16 }}>→</span>
       </button>
     </div>
   );

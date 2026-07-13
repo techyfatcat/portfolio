@@ -13,13 +13,15 @@ import StadiumEnvironment from "@/components/environment/StadiumEnvironment";
 import PostEffects from "@/components/effects/PostEffects";
 import { Stadium } from "@/components/stadium";
 import SceneManager from "@/components/scene/SceneManager";
-import CameraDirector from "@/components/camera/CameraDirector";
+import CameraDirector from "@/components/camera/CameraDirector"
 import AssetGate from "@/components/AssetGate";
 import LoadingScreen from "@/components/LoadingScreen";
 import AboutScene from "@/components/scene/AboutScene";
 import SkillsScene from "@/components/skills/SkillsScene";
 import SkillsOverlay from "../overlays/SkillOverlay";
 import ContactOverlay from "../overlays/ContactOverlay";
+import ProjectsOverlay from "@/overlays/ProjectsOverlay";
+import { projects } from "@/data/projects"; // adjust to wherever your Jumbotron's `projects` prop currently comes from
 
 
 
@@ -58,6 +60,10 @@ export default function Experience() {
     });
   }}
 >
+        {/* Runs every resize, outside Suspense so it's active immediately
+            (before assets finish loading) and never gates on AssetGate. */}
+        
+
         <Suspense fallback={null}>
           <AssetGate />
 
@@ -76,6 +82,7 @@ export default function Experience() {
       </Canvas>
         <SkillsOverlay />
         <ContactOverlay />
+        <ProjectsOverlay projects={projects} />
     </div>
   );
 }

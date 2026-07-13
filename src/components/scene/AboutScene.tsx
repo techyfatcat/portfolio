@@ -31,7 +31,6 @@ export default function AboutScene() {
     return () => clearTimeout(timer);
   }, [visible]);
 
-  // ball always flips the card, unlimited times, no special-casing
   const handleKick = () => {
     ball.current?.kick();
     setTimeout(() => {

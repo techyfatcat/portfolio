@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useRef, useState, useEffect } from "react";
-import { useThree, useFrame } from "@react-three/fiber";
+import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { useProjectModalStore } from "@/store/useProjectModalStore";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 
 type Project = {
   name: string;
@@ -14,14 +15,23 @@ type Project = {
   image?: string; // e.g. "/incog.png"
 };
 
+type Vec3 = [number, number, number];
+
 type Props = {
-  position?: [number, number, number];
-  rotation?: [number, number, number];
+  position?: Vec3;
+  rotation?: Vec3;
   width?: number;
   height?: number;
   projects: Project[];
   cycleSeconds?: number;
   onSelectProject?: (project: Project) => void;
+  // --- Responsive overrides -------------------------------------------
+  // If you don't pass these, sensible defaults are derived from `position`
+  // and `width`/`height` automatically (scaled + nudged toward the camera).
+  tabletPosition?: Vec3;
+  mobilePosition?: Vec3;
+  tabletScale?: number; // multiplier applied to width/height, default 0.82
+  mobileScale?: number; // multiplier applied to width/height, default 0.6
 };
 
 const SCREEN_BG = "#050608";
@@ -86,7 +96,8 @@ function drawScoreboard(
   w: number,
   h: number,
   project: Project,
-  previewImg: HTMLImageElement | null
+  previewImg: HTMLImageElement | null,
+  isMobile: boolean
 ) {
   ctx.clearRect(0, 0, w, h);
 
@@ -99,11 +110,16 @@ function drawScoreboard(
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  ctx.font = `800 ${h * 0.1}px Arial`;
+  // Slightly bigger relative type on mobile since the canvas itself
+  // renders smaller on-screen and thin strokes get lost.
+  const nameSize = isMobile ? 0.115 : 0.1;
+  const taglineSize = isMobile ? 0.058 : 0.05;
+
+  ctx.font = `800 ${h * nameSize}px Arial`;
   ctx.fillStyle = WHITE;
   ctx.fillText(project.name, w / 2, h * 0.14);
 
-  ctx.font = `500 ${h * 0.05}px Arial`;
+  ctx.font = `500 ${h * taglineSize}px Arial`;
   ctx.fillStyle = "#9aa4b2";
   ctx.fillText(project.tagline, w / 2, h * 0.24);
 
@@ -135,7 +151,7 @@ function drawScoreboard(
   ctx.stroke();
 
   // ---- Bottom nav row ----
-  ctx.font = `600 ${h * 0.042}px Arial`;
+  ctx.font = `600 ${h * (isMobile ? 0.05 : 0.042)}px Arial`;
 
   ctx.textAlign = "left";
   ctx.fillStyle = DIM;
@@ -165,19 +181,47 @@ export default function Jumbotron({
   projects,
   cycleSeconds = 6,
   onSelectProject,
+  tabletPosition,
+  mobilePosition,
+  tabletScale = 0.82,
+  mobileScale = 0.6,
 }: Props) {
   const { gl } = useThree();
   const [index, setIndex] = useState(0);
   const [hovered, setHovered] = useState(false);
 
+  const breakpoint = useBreakpoint();
+  const isMobile = breakpoint === "mobile";
+  const isTablet = breakpoint === "tablet";
+
   const openProject = useProjectModalStore((s) => s.open);
+
+  // --- Responsive geometry ------------------------------------------
+  const scale = isMobile ? mobileScale : isTablet ? tabletScale : 1;
+  const effectiveWidth = width * scale;
+  const effectiveHeight = height * scale;
+
+  const effectivePosition: Vec3 = isMobile
+    ? mobilePosition ?? position
+    : isTablet
+    ? tabletPosition ?? position
+    : position;
+
+  // Lower canvas resolution on mobile: it renders physically smaller on
+  // screen anyway, and this saves GPU memory / texture upload cost.
+  const canvasRes = isMobile
+    ? { w: 1024, h: 576 }
+    : isTablet
+    ? { w: 1280, h: 720 }
+    : { w: 1600, h: 900 };
 
   const canvas = useMemo(() => {
     const c = document.createElement("canvas");
-    c.width = 1600;
-    c.height = 900;
+    c.width = canvasRes.w;
+    c.height = canvasRes.h;
     return c;
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canvasRes.w, canvasRes.h]);
 
   const texture = useMemo(() => {
     const tex = new THREE.CanvasTexture(canvas);
@@ -197,14 +241,14 @@ export default function Jumbotron({
       if (previewImg && !previewImg.complete) previewImg = null;
     }
 
-    drawScoreboard(ctx, canvas.width, canvas.height, project, previewImg);
+    drawScoreboard(ctx, canvas.width, canvas.height, project, previewImg, isMobile);
     texture.needsUpdate = true;
   };
 
   useEffect(() => {
     redraw();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index]);
+  }, [index, canvas, isMobile]);
 
   useEffect(() => {
     if (projects.length <= 1) return;
@@ -216,60 +260,67 @@ export default function Jumbotron({
 
   const project = projects[index];
 
+  // On mobile, ProjectsOverlay (a normal DOM list) replaces this entirely —
+  // no point paying for the mesh/canvas/texture/interval on a screen this
+  // small anyway.
+  if (isMobile) return null;
+
+  // Wider tap zones on touch/tablet so imprecise taps still register as
+  // prev/next instead of accidentally opening the project modal.
+  const leftZone = isTablet ? 0.35 : 0.3;
+  const rightZone = isTablet ? 0.65 : 0.7;
+  const navRowTop = isTablet ? 0.82 : 0.88;
+
   return (
-    <group position={position}>
+    <group position={effectivePosition}>
       <group rotation={rotation}>
         <mesh position={[0, 0, -0.4]} castShadow>
-          <boxGeometry args={[width + 1, height + 1, 0.6]} />
+          <boxGeometry args={[effectiveWidth + 1, effectiveHeight + 1, 0.6]} />
           <meshStandardMaterial color="#15181d" roughness={0.7} metalness={0.2} />
         </mesh>
 
         <mesh position={[0, 0, -0.05]}>
-          <boxGeometry args={[width + 0.3, height + 0.3, 0.3]} />
+          <boxGeometry args={[effectiveWidth + 0.3, effectiveHeight + 0.3, 0.3]} />
           <meshStandardMaterial color="#0a0b0e" roughness={0.6} metalness={0.15} />
         </mesh>
 
         <mesh
-  position={[0, 0, 0.16]}
-  onClick={(e) => {
-    e.stopPropagation();
-    if (!project) return;
+          position={[0, 0, 0.16]}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!project) return;
 
-    // e.uv gives normalized (0-1) coordinates on the plane's texture,
-    // which line up with how the canvas is drawn (0,0 = bottom-left of plane,
-    // but drawScoreboard draws top-down, so we flip Y to match).
-    const u = e.uv?.x ?? 0.5;
-    const v = e.uv ? 1 - e.uv.y : 0.5; // flip to match canvas' top-down coordinate space
+            // e.uv gives normalized (0-1) coordinates on the plane's texture,
+            // which line up with how the canvas is drawn (0,0 = bottom-left of plane,
+            // but drawScoreboard draws top-down, so we flip Y to match).
+            const u = e.uv?.x ?? 0.5;
+            const v = e.uv ? 1 - e.uv.y : 0.5; // flip to match canvas' top-down coordinate space
 
-    const NAV_ROW_TOP = 0.88; // matches h * 0.88 divider line in drawScoreboard
-    const LEFT_ZONE = 0.3;    // roughly where "← Previous" text sits
-    const RIGHT_ZONE = 0.7;   // roughly where "Next →" text sits
+            if (v > navRowTop) {
+              if (u < leftZone) {
+                setIndex((i) => (i - 1 + projects.length) % projects.length);
+                return;
+              }
+              if (u > rightZone) {
+                setIndex((i) => (i + 1) % projects.length);
+                return;
+              }
+              // middle of nav row falls through to "tap to view"
+            }
 
-    if (v > NAV_ROW_TOP) {
-      if (u < LEFT_ZONE) {
-        setIndex((i) => (i - 1 + projects.length) % projects.length);
-        return;
-      }
-      if (u > RIGHT_ZONE) {
-        setIndex((i) => (i + 1) % projects.length);
-        return;
-      }
-      // middle of nav row falls through to "tap to view"
-    }
-
-    onSelectProject ? onSelectProject(project) : openProject(project);
-  }}
-  onPointerOver={(e) => {
-    e.stopPropagation();
-    setHovered(true);
-    document.body.style.cursor = "pointer";
-  }}
-  onPointerOut={() => {
-    setHovered(false);
-    document.body.style.cursor = "auto";
-  }}
->
-          <planeGeometry args={[width, height]} />
+            onSelectProject ? onSelectProject(project) : openProject(project);
+          }}
+          onPointerOver={(e) => {
+            e.stopPropagation();
+            setHovered(true);
+            document.body.style.cursor = "pointer";
+          }}
+          onPointerOut={() => {
+            setHovered(false);
+            document.body.style.cursor = "auto";
+          }}
+        >
+          <planeGeometry args={[effectiveWidth, effectiveHeight]} />
           <meshStandardMaterial
             map={texture}
             emissiveMap={texture}
@@ -284,10 +335,14 @@ export default function Jumbotron({
         {[-1, 1].map((side) => (
           <mesh
             key={side}
-            position={[side * (width / 2 - 1.5), -height / 2 - 2.5, -0.65]}
+            position={[
+              side * (effectiveWidth / 2 - 1.5 * scale),
+              -effectiveHeight / 2 - 2.5 * scale,
+              -0.65,
+            ]}
             castShadow
           >
-            <boxGeometry args={[0.5, 5, 0.5]} />
+            <boxGeometry args={[0.5 * scale, 5 * scale, 0.5 * scale]} />
             <meshStandardMaterial color="#15181d" roughness={0.7} metalness={0.2} />
           </mesh>
         ))}

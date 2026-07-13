@@ -73,7 +73,7 @@ const categories: Category[] = [
   },
 ];
 
-// quiet-pitch palette — one accent doing double duty, no blue/black
+
 const ACCENT = "#8FB996"; // muted turf-green — tabs, borders, hover states
 const NUMBER = "#C9A24B"; // worn-gold — reserved only for stat numbers
 const BG = "#0D0F0B"; // warm near-black, not pure black
@@ -134,9 +134,7 @@ export default function SkillsOverlay() {
       }}
     >
       <div className="skillsPanel" style={{ pointerEvents: "auto" }}>
-        {/* LEFT PANEL */}
         <div className="skillsLeft">
-          {/* header — thin top rule + quiet label */}
           <div
             className="skillsHeaderRule"
             style={{
@@ -175,7 +173,6 @@ export default function SkillsOverlay() {
               Core technologies powering modern web, backend and AI applications.
             </p>
 
-            {/* tabs */}
             <div className="skillsTabs">
               {categories.map((cat, index) => (
                 <button
@@ -200,9 +197,6 @@ export default function SkillsOverlay() {
               ))}
             </div>
 
-            {/* stat rows — flex + min-height:0 so it can shrink to fit any
-                category's skill count, tighter row padding so 6 items (the
-                Frontend tab) never get clipped by the panel's fixed height */}
             <div key={current.id} className="skillsStatList">
               {current.skills.map((skill) => (
                 <div key={skill.name} className="skillsStatRow">
@@ -231,9 +225,6 @@ export default function SkillsOverlay() {
           </div>
         </div>
 
-        {/* RIGHT PANEL — icons grid, with the Projects button pinned to the
-            bottom of this column (outside the per-category key block) so its
-            position never moves when switching tabs */}
         <div className="skillsRight">
           <div className="skillsRightHeader">
             <span
@@ -290,7 +281,6 @@ export default function SkillsOverlay() {
             })}
           </div>
 
-          {/* static footer — stays in the same place regardless of active tab */}
           <div className="skillsFooter">
             <button
               onClick={() => moveTo("projects")}
@@ -318,7 +308,7 @@ export default function SkillsOverlay() {
               }}
             >
               Projects
-              <span style={{ fontSize: 15, color: ACCENT }}>→</span>
+              
             </button>
           </div>
         </div>
