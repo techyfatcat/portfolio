@@ -34,7 +34,6 @@ export default function HeroOverlay() {
   const [buttonVisible, setButtonVisible] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
   const dingRef = useRef<HTMLAudioElement | null>(null);
   const chimeRef = useRef<HTMLAudioElement | null>(null);
   const hasChimed = useRef(false);
@@ -44,18 +43,6 @@ export default function HeroOverlay() {
     audio.currentTime = 0;
     audio.play().catch(() => {});
   };
-
-  useEffect(() => {
-    const handleMove = (e: MouseEvent) => {
-      if (!containerRef.current || !glowRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      glowRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-    };
-    window.addEventListener("mousemove", handleMove);
-    return () => window.removeEventListener("mousemove", handleMove);
-  }, []);
 
   useEffect(() => {
     if (!introFinished || currentView !== "hero" || phase !== "announcement") return;
@@ -260,23 +247,7 @@ export default function HeroOverlay() {
             paddingBottom: "90px",
           }}
         >
-          <div
-            ref={glowRef}
-            className="hero-glow"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: 500,
-              height: 500,
-              marginLeft: -250,
-              marginTop: -250,
-              borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(255,255,255,.05), transparent 70%)",
-              pointerEvents: "none",
-              willChange: "transform",
-            }}
-          />
+          
 
           <div
             className="hero-watermark"

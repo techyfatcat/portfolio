@@ -17,20 +17,17 @@ export const cameraViews = {
   about: {
     position: new THREE.Vector3(-6, 5.5, 8),
     target: new THREE.Vector3(0, 1.2, 0),
-},
-skills: {
-  position: new THREE.Vector3(
-    0,
-    7,
-    -18
-  ),
+  },
 
-  target: new THREE.Vector3(
-    0,
-    1,
-    -32
-  ),
-},
+  aboutMobile: {
+    position: new THREE.Vector3(0, 3.2, 8.5),
+    target: new THREE.Vector3(0, 0.4, 0),
+  },
+
+  skills: {
+    position: new THREE.Vector3(0, 7, -18),
+    target: new THREE.Vector3(0, 1, -32),
+  },
 
   projects: {
     position: new THREE.Vector3(46, 7, 0),

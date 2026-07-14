@@ -91,14 +91,7 @@ transform: visible
   >
     <span>to Skills</span>
 
-    <span
-      style={{
-        fontSize: 18,
-        transition: "transform .25s ease",
-      }}
-    >
-      →
-    </span>
+    
   </div>
 
   <div

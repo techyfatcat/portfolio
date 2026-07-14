@@ -13,6 +13,8 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
+import { useIsMobileRef } from "@/hooks/useIsMobile";
+
 export interface BallHandle {
   show: () => void;
   kick: () => void;
@@ -33,19 +35,16 @@ const Ball = forwardRef<BallHandle, BallProps>(
 
     const targetScale = useRef(1);
 
-    const targetPosition = useRef(
-      new THREE.Vector3(0, 0, 0)
-    );
+    const targetPosition = useRef(new THREE.Vector3(0, 0, 0));
 
     const hitRadius = useRef(0.55);
 
-    const target = useMemo(
-      () => new THREE.Vector3(),
-      []
-    );
+    const target = useMemo(() => new THREE.Vector3(), []);
 
     const kickProgress = useRef(0);
     const kicking = useRef(false);
+
+    const isMobileRef = useIsMobileRef();
 
     useLayoutEffect(() => {
       const box = new THREE.Box3().setFromObject(scene);
@@ -54,11 +53,7 @@ const Ball = forwardRef<BallHandle, BallProps>(
 
       box.getSize(size);
 
-      const maxDim = Math.max(
-        size.x,
-        size.y,
-        size.z
-      );
+      const maxDim = Math.max(size.x, size.y, size.z);
 
       const scale = 0.45 / maxDim;
 
@@ -72,8 +67,7 @@ const Ball = forwardRef<BallHandle, BallProps>(
 
       scene.position.sub(center);
 
-      hitRadius.current =
-        (maxDim * scale) / 2 + 0.18;
+      hitRadius.current = (maxDim * scale) / 2 + 0.18;
 
       scene.traverse((child) => {
         if ((child as THREE.Mesh).isMesh) {
@@ -96,11 +90,13 @@ const Ball = forwardRef<BallHandle, BallProps>(
 
     useImperativeHandle(ref, () => ({
       show() {
-        targetScale.current = 1.8;
+        const mobile = isMobileRef.current;
+
+        targetScale.current = mobile ? 1.3 : 1.8;
 
         targetPosition.current.set(
-          -2.1,
-          0.35,
+          mobile ? 0 : -2.1,
+          mobile ? -1.35 : 0.35,
           0
         );
       },
@@ -112,11 +108,7 @@ const Ball = forwardRef<BallHandle, BallProps>(
       reset() {
         targetScale.current = 1;
 
-        targetPosition.current.set(
-          0,
-          0,
-          0
-        );
+        targetPosition.current.set(0, 0, 0);
 
         kicking.current = false;
         kickProgress.current = 0;
@@ -134,17 +126,11 @@ const Ball = forwardRef<BallHandle, BallProps>(
 
       group.current.scale.lerp(target, 0.1);
 
-      group.current.position.lerp(
-        targetPosition.current,
-        0.1
-      );
+      group.current.position.lerp(targetPosition.current, 0.1);
 
       const baseY = targetPosition.current.y;
 
-      const float =
-        Math.sin(
-          state.clock.elapsedTime * 2.2
-        ) * 0.03;
+      const float = Math.sin(state.clock.elapsedTime * 2.2) * 0.03;
 
       group.current.position.y = baseY + float;
 
@@ -153,31 +139,21 @@ const Ball = forwardRef<BallHandle, BallProps>(
       if (kicking.current) {
         kickProgress.current += delta * 3.2;
 
-        const t = Math.min(
-          kickProgress.current,
-          1
-        );
+        const t = Math.min(kickProgress.current, 1);
 
         const ease = Math.sin(t * Math.PI);
 
-        group.current.position.z =
-          ease * 0.55;
+        group.current.position.z = ease * 0.55;
 
-        group.current.position.y =
-          baseY +
-          float +
-          ease * 0.08;
+        group.current.position.y = baseY + float + ease * 0.08;
 
         group.current.rotation.x += 0.28;
         group.current.rotation.z += 0.18;
 
         group.current.scale.set(
-          targetScale.current *
-            (1 - ease * 0.08),
-          targetScale.current *
-            (1 + ease * 0.08),
-          targetScale.current *
-            (1 - ease * 0.08)
+          targetScale.current * (1 - ease * 0.08),
+          targetScale.current * (1 + ease * 0.08),
+          targetScale.current * (1 - ease * 0.08)
         );
 
         if (t >= 1) {
@@ -185,17 +161,14 @@ const Ball = forwardRef<BallHandle, BallProps>(
 
           group.current.position.z = 0;
 
-          group.current.scale.setScalar(
-            targetScale.current
-          );
+          group.current.scale.setScalar(targetScale.current);
         }
       } else {
-        group.current.position.z =
-          THREE.MathUtils.lerp(
-            group.current.position.z,
-            0,
-            0.18
-          );
+        group.current.position.z = THREE.MathUtils.lerp(
+          group.current.position.z,
+          0,
+          0.18
+        );
       }
     });
 
@@ -213,29 +186,17 @@ const Ball = forwardRef<BallHandle, BallProps>(
 
             setHovered(true);
 
-            document.body.style.cursor =
-              "pointer";
+            document.body.style.cursor = "pointer";
           }}
           onPointerOut={() => {
             setHovered(false);
 
-            document.body.style.cursor =
-              "default";
+            document.body.style.cursor = "default";
           }}
         >
-          <sphereGeometry
-            args={[
-              hitRadius.current,
-              24,
-              24,
-            ]}
-          />
+          <sphereGeometry args={[hitRadius.current, 24, 24]} />
 
-          <meshBasicMaterial
-            transparent
-            opacity={0}
-            depthWrite={false}
-          />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
       </group>
     );

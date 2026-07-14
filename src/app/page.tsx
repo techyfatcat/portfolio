@@ -4,6 +4,7 @@ import ProjectModal from "@/components/ui/ProjectModal";
 import Navbar from "@/components/ui/Navbar";
 import AboutContinue from "@/components/ui/AboutContinue";
 import ContactExitSigns from "@/components/stadium/ContactExitSigns";
+import ProjectsContinue from "@/components/ui/ProjectsContinue";
 
 
 export default function Home() {
@@ -15,7 +16,7 @@ export default function Home() {
 
       <HeroOverlay />
             <AboutContinue />
-
+      <ProjectsContinue />
 
       <ProjectModal />
 

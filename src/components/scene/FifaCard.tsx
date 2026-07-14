@@ -2,6 +2,7 @@
 
 import {
   forwardRef,
+  useEffect,
   useImperativeHandle,
   useRef,
 } from "react";
@@ -14,6 +15,8 @@ import {
 
 import * as THREE from "three";
 
+import { useIsMobileRef } from "@/hooks/useIsMobile";
+
 export interface FifaCardHandle {
   show: () => void;
   flip: () => void;
@@ -22,6 +25,9 @@ export interface FifaCardHandle {
 
 const WIDTH = 2.6;
 const HEIGHT = 3.6;
+
+const FRONT_DURATION = 3000;
+const BACK_DURATION = 5000;
 
 const FifaCard = forwardRef<FifaCardHandle>((_, ref) => {
   const { camera } = useThree();
@@ -38,6 +44,10 @@ const FifaCard = forwardRef<FifaCardHandle>((_, ref) => {
 
   const targetRotation = useRef(0);
 
+  const isMobileRef = useIsMobileRef();
+
+  const autoFlipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const front = useLoader(
     THREE.TextureLoader,
     "/cards/front.png"
@@ -51,21 +61,58 @@ const FifaCard = forwardRef<FifaCardHandle>((_, ref) => {
   front.colorSpace = THREE.SRGBColorSpace;
   back.colorSpace = THREE.SRGBColorSpace;
 
+  const clearAutoFlip = () => {
+    if (autoFlipTimer.current) {
+      clearTimeout(autoFlipTimer.current);
+      autoFlipTimer.current = null;
+    }
+  };
+
+  const doFlip = () => {
+    flipped.current = !flipped.current;
+
+    targetRotation.current = flipped.current ? Math.PI : 0;
+  };
+
+  const scheduleAutoFlip = () => {
+    clearAutoFlip();
+
+    const duration = flipped.current ? BACK_DURATION : FRONT_DURATION;
+
+    autoFlipTimer.current = setTimeout(() => {
+      doFlip();
+      scheduleAutoFlip();
+    }, duration);
+  };
+
   useImperativeHandle(ref, () => ({
     show() {
       targetScale.current = 1;
+
+      if (isMobileRef.current) {
+        flipped.current = false;
+        targetRotation.current = 0;
+
+        scheduleAutoFlip();
+      }
     },
 
     flip() {
-      flipped.current = !flipped.current;
+      // Manual flip stays available on desktop / on click.
+      // On mobile, a manual flip resets the auto-loop timing
+      // so it doesn't fight the next scheduled flip.
+      clearAutoFlip();
 
-      targetRotation.current =
-        flipped.current
-          ? Math.PI
-          : 0;
+      doFlip();
+
+      if (isMobileRef.current) {
+        scheduleAutoFlip();
+      }
     },
 
     reset() {
+      clearAutoFlip();
+
       targetScale.current = 0;
 
       targetRotation.current = 0;
@@ -79,6 +126,10 @@ const FifaCard = forwardRef<FifaCardHandle>((_, ref) => {
         pivot.current.rotation.set(0, 0, 0);
     },
   }));
+
+  useEffect(() => {
+    return () => clearAutoFlip();
+  }, []);
 
   useFrame(() => {
     if (!root.current || !pivot.current) return;
