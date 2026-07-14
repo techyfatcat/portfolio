@@ -14,7 +14,7 @@ export const projects: Project[] = [
     tagline: "3D football-themed portfolio built with R3F and Three.js",
     tech: ["Next.js", "R3F", "Three.js", "Zustand"],
     status: "LIVE",
-    link: "https://github.com/yourname/stadium",
+    link: "https://aaditsarhadi.in",
     description:
       "A fully custom 3D stadium built from Three.js primitives, with a cinematic intro camera sequence and interactive waypoints mapped to portfolio sections.",
     image: "/stadium.png",
@@ -24,7 +24,7 @@ export const projects: Project[] = [
     tagline: "Community for placement prep with resources and tools",
     tech: ["Node.js", "MongoDB", "EJS", "React"],
     status: "COMPLETE",
-    link: "https://github.com/yourname/incog",
+    link: "https://incog-luceris.vercel.app/",
     description:
       "Companies section with tier-aware cards, group creation flow, and a threaded-comment community page.",
     image: "/incog.png",
@@ -35,7 +35,7 @@ export const projects: Project[] = [
     tagline: "AI-Powered platform for interview question preparation",
     tech: ["Node.js", "MongoDB", "EJS", "React"],
     status: "COMPLETE",
-    link: "https://github.com/yourname/",
+    link: "https://github.com/techyfatcat/InterviewScope",
     description:
       "Prepare for interviews through AI-powered mock sessions, analytics, and personalized learning recommendations.",
     image: "/interviewScope.png",
