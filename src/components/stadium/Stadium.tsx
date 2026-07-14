@@ -9,7 +9,6 @@ import Pitch from "./Pitch";
 import Roof from "./Roof";
 import RoofSupports from "./RoofSupports";
 import Seats from "./Seats";
-import SeatSection from "./SeatSection";
 import Stairs from "./Stairs";
 import Stands from "./Stands";
 import Jumbotron from "@components/world/Jumbotron";
