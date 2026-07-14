@@ -9,7 +9,6 @@ import { useMusicStore } from "@/store/useMusicStore";
 
 const ACCENT = "#c1f612";
 const MUSIC_HINT_KEY = "musicHintSeen";
-const TARGET_VOLUME = 0.12;
 const NAVBAR_HEIGHT = 58; 
 
 const sections: { id: CameraView; label: string }[] = [
@@ -87,7 +86,6 @@ const toggle = useMusicStore(
   const glowRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
 
-  const [musicPlaying, setMusicPlaying] = useState(true);
   const [showMusicHint, setShowMusicHint] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -363,7 +361,8 @@ const toggle = useMusicStore(
             cursor: "pointer",
             ...sharedGlass,
           }}
-          title={musicPlaying ? "Pause Music" : "Play Music"}
+          onClick={toggle}
+          title={enabled ? "Pause Music" : "Play Music"}
         >
           <div
             className="cd-disc"
@@ -372,7 +371,7 @@ const toggle = useMusicStore(
               width: 34,
               height: 34,
               borderRadius: "50%",
-              animation: musicPlaying ? "spinCD 5s linear infinite" : "none",
+              animation: enabled ? "spinCD 5s linear infinite" : "none",
               transition: "box-shadow .35s ease",
               background: `
                 conic-gradient(from 0deg,
@@ -388,7 +387,7 @@ const toggle = useMusicStore(
                   #ff9a9e 360deg
                 )
               `,
-              boxShadow: musicPlaying
+              boxShadow: enabled
                 ? `0 0 16px rgba(193,246,18,.35), inset 0 0 6px rgba(255,255,255,.5)`
                 : "inset 0 0 4px rgba(255,255,255,.35)",
             }}
@@ -447,7 +446,7 @@ const toggle = useMusicStore(
           </div>
 
           <div className="cd-icon-overlay">
-            {musicPlaying ? (
+            {enabled ? (
               <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
                 <rect x="5" y="4" width="5" height="16" rx="1" />
                 <rect x="14" y="4" width="5" height="16" rx="1" />

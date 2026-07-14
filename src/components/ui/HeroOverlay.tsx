@@ -57,7 +57,6 @@ export default function HeroOverlay() {
     return () => window.removeEventListener("mousemove", handleMove);
   }, []);
 
-  // kicks off the sequence once, plays the chime, fades the first message in
   useEffect(() => {
     if (!introFinished || currentView !== "hero" || phase !== "announcement") return;
 
@@ -78,7 +77,6 @@ export default function HeroOverlay() {
     };
   }, [introFinished, currentView, phase]);
 
-  // advances: hold -> fade out -> either next message, or move to hero phase
   useEffect(() => {
     if (!msgVisible || phase !== "announcement") return;
 
@@ -108,8 +106,6 @@ export default function HeroOverlay() {
     const content = setTimeout(() => setHeroVisible(true), 150);
     const button = setTimeout(() => {
       setButtonVisible(true);
-      // The button appearing is the last visible step of the loading
-      // sequence — this is the true "done" signal for the rest of the app.
       setHeroAnnouncementDone(true);
     }, 1400);
     return () => {
@@ -137,7 +133,6 @@ export default function HeroOverlay() {
         pointerEvents: active ? "auto" : "none",
       }}
     >
-      {/* ===================== ANNOUNCEMENT PHASE ===================== */}
       {showAnnouncementLayer && (
         <div
           style={{
@@ -222,7 +217,6 @@ export default function HeroOverlay() {
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "9vh", background: "#000" }} />
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "9vh", background: "#000" }} />
 
-          {/* single message, swapped via msgIndex — crossfades each time */}
           <div
             className="announcement-text"
             style={{
@@ -252,7 +246,6 @@ export default function HeroOverlay() {
         </div>
       )}
 
-      {/* ===================== HERO PHASE ===================== */}
       {phase === "hero" && (
         <div
           className="hero-phase"

@@ -12,7 +12,7 @@ type Project = {
   tech: string[];
   status?: string;
   link: string;
-  image?: string; // e.g. "/incog.png"
+  image?: string; 
 };
 
 type Vec3 = [number, number, number];
@@ -25,21 +25,16 @@ type Props = {
   projects: Project[];
   cycleSeconds?: number;
   onSelectProject?: (project: Project) => void;
-  // --- Responsive overrides -------------------------------------------
-  // If you don't pass these, sensible defaults are derived from `position`
-  // and `width`/`height` automatically (scaled + nudged toward the camera).
   tabletPosition?: Vec3;
   mobilePosition?: Vec3;
-  tabletScale?: number; // multiplier applied to width/height, default 0.82
-  mobileScale?: number; // multiplier applied to width/height, default 0.6
+  tabletScale?: number; 
+  mobileScale?: number; 
 };
 
 const SCREEN_BG = "#050608";
 const WHITE = "#eef3f8";
 const DIM = "#5a6270";
 
-// Simple module-level cache so images are only ever loaded once,
-// even across multiple Jumbotron instances / re-renders.
 const imageCache = new Map<string, HTMLImageElement>();
 
 function loadImage(src: string, onLoaded: () => void): HTMLImageElement | null {
@@ -61,8 +56,6 @@ function loadImage(src: string, onLoaded: () => void): HTMLImageElement | null {
   return null;
 }
 
-// Contain-fit: the whole image is visible inside the box, letterboxed
-// on whichever axis is shorter. No cropping.
 function drawImageContain(
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement,
@@ -78,10 +71,8 @@ function drawImageContain(
   let drawH = boxH;
 
   if (imgRatio > boxRatio) {
-    // image is relatively wider -> constrain by width
     drawH = boxW / imgRatio;
   } else {
-    // image is relatively taller -> constrain by height
     drawW = boxH * imgRatio;
   }
 
@@ -106,12 +97,9 @@ function drawScoreboard(
 
   const pad = w * 0.045;
 
-  // ---- Name + tagline ----
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  // Slightly bigger relative type on mobile since the canvas itself
-  // renders smaller on-screen and thin strokes get lost.
   const nameSize = isMobile ? 0.115 : 0.1;
   const taglineSize = isMobile ? 0.058 : 0.05;
 
@@ -130,7 +118,7 @@ function drawScoreboard(
   ctx.lineTo(w - pad, h * 0.3);
   ctx.stroke();
 
-  // ---- Full width preview image, no frame/background ----
+
   if (previewImg) {
     const imageTop = h * 0.34;
     const imageBottom = h * 0.84;
@@ -150,7 +138,6 @@ function drawScoreboard(
   ctx.lineTo(w - pad, h * 0.88);
   ctx.stroke();
 
-  // ---- Bottom nav row ----
   ctx.font = `600 ${h * (isMobile ? 0.05 : 0.042)}px Arial`;
 
   ctx.textAlign = "left";
@@ -196,7 +183,6 @@ export default function Jumbotron({
 
   const openProject = useProjectModalStore((s) => s.open);
 
-  // --- Responsive geometry ------------------------------------------
   const scale = isMobile ? mobileScale : isTablet ? tabletScale : 1;
   const effectiveWidth = width * scale;
   const effectiveHeight = height * scale;
@@ -207,8 +193,6 @@ export default function Jumbotron({
     ? tabletPosition ?? position
     : position;
 
-  // Lower canvas resolution on mobile: it renders physically smaller on
-  // screen anyway, and this saves GPU memory / texture upload cost.
   const canvasRes = isMobile
     ? { w: 1024, h: 576 }
     : isTablet
@@ -220,7 +204,6 @@ export default function Jumbotron({
     c.width = canvasRes.w;
     c.height = canvasRes.h;
     return c;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasRes.w, canvasRes.h]);
 
   const texture = useMemo(() => {
@@ -237,7 +220,7 @@ export default function Jumbotron({
 
     let previewImg: HTMLImageElement | null = null;
     if (project.image) {
-      previewImg = loadImage(project.image, redraw); // redraw again once loaded
+      previewImg = loadImage(project.image, redraw);
       if (previewImg && !previewImg.complete) previewImg = null;
     }
 
@@ -247,7 +230,6 @@ export default function Jumbotron({
 
   useEffect(() => {
     redraw();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, canvas, isMobile]);
 
   useEffect(() => {
@@ -260,13 +242,10 @@ export default function Jumbotron({
 
   const project = projects[index];
 
-  // On mobile, ProjectsOverlay (a normal DOM list) replaces this entirely —
-  // no point paying for the mesh/canvas/texture/interval on a screen this
-  // small anyway.
+
   if (isMobile) return null;
 
-  // Wider tap zones on touch/tablet so imprecise taps still register as
-  // prev/next instead of accidentally opening the project modal.
+
   const leftZone = isTablet ? 0.35 : 0.3;
   const rightZone = isTablet ? 0.65 : 0.7;
   const navRowTop = isTablet ? 0.82 : 0.88;
@@ -290,11 +269,8 @@ export default function Jumbotron({
             e.stopPropagation();
             if (!project) return;
 
-            // e.uv gives normalized (0-1) coordinates on the plane's texture,
-            // which line up with how the canvas is drawn (0,0 = bottom-left of plane,
-            // but drawScoreboard draws top-down, so we flip Y to match).
             const u = e.uv?.x ?? 0.5;
-            const v = e.uv ? 1 - e.uv.y : 0.5; // flip to match canvas' top-down coordinate space
+            const v = e.uv ? 1 - e.uv.y : 0.5;
 
             if (v > navRowTop) {
               if (u < leftZone) {
@@ -305,7 +281,6 @@ export default function Jumbotron({
                 setIndex((i) => (i + 1) % projects.length);
                 return;
               }
-              // middle of nav row falls through to "tap to view"
             }
 
             onSelectProject ? onSelectProject(project) : openProject(project);

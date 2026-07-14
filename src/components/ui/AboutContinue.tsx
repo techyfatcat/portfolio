@@ -34,11 +34,11 @@ export default function AboutContinue() {
         fontFamily: "Inter, sans-serif",
         ...(isDesktop
           ? {
-              top: "50%",
-              right: "clamp(24px, 5vw, 72px)",
-              transform: visible
-                ? "translate3d(0,-50%,0)"
-                : "translate3d(0,calc(-50% + 12px),0)",
+              left: "62%",
+top: "70%",
+transform: visible
+  ? "translateY(-50%)"
+  : "translateY(calc(-50% + 12px))",
             }
           : {
               bottom: "max(24px, env(safe-area-inset-bottom, 0px) + 16px)",
@@ -54,35 +54,64 @@ export default function AboutContinue() {
         pointerEvents: visible ? "auto" : "none",
       }}
     >
-      <button
-        onClick={() => moveTo("skills")}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 10,
-          padding: "clamp(10px, 1.4vw, 14px) clamp(20px, 3vw, 30px)",
-          background: "rgba(255,255,255,.06)",
-          border: "1px solid rgba(255,255,255,.18)",
-          color: "white",
-          borderRadius: "999px",
-          backdropFilter: "blur(10px)",
-          cursor: "pointer",
-          fontSize: "clamp(13px, 1.4vw, 15px)",
-          fontWeight: 600,
-          whiteSpace: "nowrap",
-          transition: "background .25s ease, border-color .25s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "rgba(255,255,255,.14)";
-          e.currentTarget.style.borderColor = "rgba(255,255,255,.3)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "rgba(255,255,255,.06)";
-          e.currentTarget.style.borderColor = "rgba(255,255,255,.18)";
-        }}
-      >
-        Continue to Skills
-      </button>
+      <div
+  onClick={() => moveTo("skills")}
+  style={{
+    marginTop: 22,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 6,
+    cursor: "pointer",
+    userSelect: "none",
+  }}
+>
+  <span
+    style={{
+      fontFamily: "var(--font-display)",
+      fontSize: 22,
+      letterSpacing: 2,
+      color: "white",
+      textTransform: "uppercase",
+      lineHeight: 1,
+    }}
+  >
+    Continue
+  </span>
+
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      color: "#c1f612",
+      fontWeight: 700,
+      fontSize: 15,
+    }}
+  >
+    <span>to Skills</span>
+
+    <span
+      style={{
+        fontSize: 18,
+        transition: "transform .25s ease",
+      }}
+    >
+      →
+    </span>
+  </div>
+
+  <div
+    style={{
+      width: 70,
+      height: 2,
+      borderRadius: 999,
+      background:
+        "linear-gradient(90deg, transparent, #c1f612, transparent)",
+      marginTop: 4,
+    }}
+  />
+</div>
     </div>
   );
 }
