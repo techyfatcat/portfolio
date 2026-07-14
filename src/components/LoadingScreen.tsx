@@ -1,338 +1,531 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
 import { useIntroStore } from "@/store/useIntroStore";
+import { useMusicStore } from "@/store/useMusicStore";
 
+const STADIUM_AUDIO = "/audio/music/stadium-theme.mp3";
 
-type PlayerSpot = { id: string; x: number; y: number; activateAt: number };
+const ACTIVE = "#8FB996";
+const LINE = "rgba(255,255,255,.08)";
+const INACTIVE = "rgba(255,255,255,.18)";
 
-const FORMATION: PlayerSpot[] = [
+type Player = {
+  id: string;
+  x: number;
+  y: number;
+  activateAt: number;
+};
 
-  { id: "gk", x: 50, y: 92, activateAt: 5 },
+const PLAYERS: Player[] = [
+  { id: "gk", x: 110, y: 270, activateAt: 5 },
 
-  { id: "lb", x: 18, y: 72, activateAt: 15 },
-  { id: "cb1", x: 38, y: 78, activateAt: 25 },
-  { id: "cb2", x: 62, y: 78, activateAt: 35 },
-  { id: "rb", x: 82, y: 72, activateAt: 45 },
+  { id: "lb", x: 40, y: 215, activateAt: 15 },
+  { id: "cb1", x: 85, y: 230, activateAt: 25 },
+  { id: "cb2", x: 135, y: 230, activateAt: 35 },
+  { id: "rb", x: 180, y: 215, activateAt: 45 },
 
-  { id: "lm", x: 30, y: 48, activateAt: 55 },
-  { id: "cm", x: 50, y: 42, activateAt: 63 },
-  { id: "rm", x: 70, y: 48, activateAt: 71 },
+  { id: "lm", x: 60, y: 145, activateAt: 55 },
+  { id: "cm", x: 110, y: 135, activateAt: 63 },
+  { id: "rm", x: 160, y: 145, activateAt: 71 },
 
-  { id: "lw", x: 20, y: 16, activateAt: 80 },
-  { id: "st", x: 50, y: 10, activateAt: 88 },
-  { id: "rw", x: 80, y: 16, activateAt: 95 },
+  { id: "lw", x: 45, y: 55, activateAt: 80 },
+  { id: "st", x: 110, y: 35, activateAt: 88 },
+  { id: "rw", x: 175, y: 55, activateAt: 95 },
 ];
 
-const PITCH_LINE = "rgba(255,255,255,.08)";
-const INACTIVE = "rgba(255,255,255,.15)";
-const ACTIVE = "#8FB996";
+function stage(progress: number, complete: boolean) {
+  if (complete || progress >= 99.5) return "Kickoff.";
 
-function stageForProgress(progress: number, scored: boolean) {
-  if (scored || progress >= 95) return "Kickoff.";
 
-  return "Entering the Stadium...";
+  return "Entering Stadium...";
 }
 
 export default function LoadingScreen() {
   const assetsReady = useIntroStore((s) => s.assetsReady);
   const loadProgress = useIntroStore((s) => s.loadProgress);
 
-  const [displayProgress, setDisplayProgress] = useState(0);
+  const setEnabled = useMusicStore(
+    s => s.setEnabled
+);
+
   const [visible, setVisible] = useState(true);
   const [fading, setFading] = useState(false);
-  const [minDurationPassed, setMinDurationPassed] = useState(false);
-  const [scored, setScored] = useState(false);
+
+  const [displayProgress, setDisplayProgress] = useState(0);
+
+  const [loadingFinished, setLoadingFinished] =
+    useState(false);
+
+  const [showMusicPrompt, setShowMusicPrompt] =
+    useState(false);
+
 
   const targetProgress = useRef(0);
 
+  const mounted = useRef(true);
 
-  useEffect(() => {
+    useEffect(() => {
     useIntroStore.getState().setLoadingFinished(false);
+
+    return () => {
+      mounted.current = false;
+    };
   }, []);
 
-
-  useEffect(() => {
-    const timer = setTimeout(() => setMinDurationPassed(true), 2600);
-    return () => clearTimeout(timer);
-  }, []);
-
-
-  useEffect(() => {
+    useEffect(() => {
     targetProgress.current = loadProgress;
   }, [loadProgress]);
 
-
   useEffect(() => {
-    let frame: number;
-    let last = performance.now();
+    let frame = 0;
 
-    const animate = (now: number) => {
-      const dt = Math.min(now - last, 50);
-      last = now;
-
+    const animate = () => {
       setDisplayProgress((current) => {
-        const target = targetProgress.current;
-        const diff = target - current;
+        const diff = targetProgress.current - current;
 
-        if (Math.abs(diff) < 0.05) return target;
+        if (Math.abs(diff) < 0.05)
+          return targetProgress.current;
 
-        const ease = 1 - Math.pow(0.0025, dt / 1000);
-        return current + diff * ease;
+        return current + diff * 0.08;
       });
 
       frame = requestAnimationFrame(animate);
     };
 
     frame = requestAnimationFrame(animate);
+
     return () => cancelAnimationFrame(frame);
   }, []);
 
-
-  useEffect(() => {
+    useEffect(() => {
     if (!assetsReady) return;
-    if (!minDurationPassed) return;
-    if (displayProgress < 99.8) return;
 
-    setScored(true);
+    if (displayProgress < 99.5) return;
 
-    const hold = setTimeout(() => {
+    if (loadingFinished) return;
+
+    setLoadingFinished(true);
+
+    setTimeout(() => {
+      if (!mounted.current) return;
+
+      setShowMusicPrompt(true);
+    }, 350);
+  }, [assetsReady, displayProgress, loadingFinished]);
+
+    
+
+  function finishLoading() {
+    setShowMusicPrompt(false);
+
+    setTimeout(() => {
       setFading(true);
 
-      const hide = setTimeout(() => {
-        useIntroStore.getState().setLoadingFinished(true);
+      setTimeout(() => {
+        useIntroStore
+          .getState()
+          .setLoadingFinished(true);
+
         setVisible(false);
       }, 700);
 
-      return () => clearTimeout(hide);
-    }, 450);
+    }, 350);
+  }
 
-    return () => clearTimeout(hold);
-  }, [assetsReady, minDurationPassed, displayProgress]);
+    const progress = Math.min(
+    100,
+    Math.max(0, displayProgress)
+  );
 
-  const progress = Math.min(100, Math.max(0, displayProgress));
-  const stage = useMemo(() => stageForProgress(progress, scored), [progress, scored]);
+  const title = useMemo(
+    () => stage(progress, loadingFinished),
+    [progress, loadingFinished]
+  );
 
   if (!visible) return null;
 
-  return (
+
+    return (
+  <div
+    style={{
+      position: "fixed",
+      inset: 0,
+      zIndex: 99999,
+      overflow: "hidden",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      background: "#050608",
+      opacity: fading ? 0 : 1,
+      transform: fading ? "scale(1.03)" : "scale(1)",
+      filter: fading ? "blur(6px)" : "blur(0px)",
+      transition:
+        "opacity .8s ease, transform .8s ease, filter .8s ease",
+      fontFamily: "Inter, sans-serif",
+    }}
+  >
+    
+
+    {/* Background */}
     <div
       style={{
-        position: "fixed",
+        position: "absolute",
         inset: 0,
-        zIndex: 99999,
-        overflow: "hidden",
+        background:
+          "radial-gradient(circle at center, rgba(143,185,150,.08), transparent 65%)",
+        filter: "blur(120px)",
+      }}
+    />
+
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        backgroundImage:
+          "linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px)",
+        backgroundSize: "64px 64px",
+        opacity: .3,
+      }}
+    />
+
+    <div
+      style={{
+        position: "relative",
+        zIndex: 5,
         display: "flex",
-        justifyContent: "center",
+        flexDirection: "column",
         alignItems: "center",
-        background: "#060606",
-        opacity: fading ? 0 : 1,
-        transform: fading ? "scale(1.03)" : "scale(1)",
-        filter: fading ? "blur(6px)" : "blur(0px)",
-        transition: "opacity .8s ease, transform .8s ease, filter .8s ease",
-        pointerEvents: "none",
-        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+        color: "white",
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(160deg, #0a0a0a 0%, #060606 45%, #030303 100%)",
-        }}
-      />
 
       <div
         style={{
-          position: "absolute",
-          width: 1100,
-          height: 1100,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(circle, rgba(143,185,150,.10), transparent 70%)",
-          opacity: 0.6 + progress / 500,
-          filter: "blur(120px)",
-          transition: "opacity .6s ease",
-        }}
-      />
-
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px)",
-          backgroundSize: "64px 64px",
-          maskImage:
-            "radial-gradient(circle at center, black 0%, transparent 75%)",
-          WebkitMaskImage:
-            "radial-gradient(circle at center, black 0%, transparent 75%)",
-        }}
-      />
-
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          opacity: 0.03,
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-          mixBlendMode: "overlay",
-        }}
-      />
-
-      <div
-        style={{
-          position: "relative",
-          zIndex: 5,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          color: "white",
+          letterSpacing: 6,
+          textTransform: "uppercase",
+          fontSize: 12,
+          color: "rgba(255,255,255,.45)",
+          marginBottom: 18,
         }}
       >
-        <div
+        MATCHDAY
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.h1
+          key={title}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: .35 }}
           style={{
-            fontSize: 12,
-            letterSpacing: 6,
-            textTransform: "uppercase",
-            color: "rgba(255,255,255,.45)",
-            marginBottom: 20,
+            margin: 0,
+            fontSize: 38,
+            fontWeight: 800,
+            color:
+              title === "Kickoff."
+                ? ACTIVE
+                : "white",
           }}
         >
-          Matchday
-        </div>
+          {title}
+        </motion.h1>
+      </AnimatePresence>
 
-        <div style={{ height: 56, display: "flex", alignItems: "center" }}>
-          <AnimatePresence mode="wait">
-            <motion.h1
-              key={stage}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              style={{
-                margin: 0,
-                fontSize: 36,
-                fontWeight: 800,
-                lineHeight: 1.05,
-                letterSpacing: -1,
-                textAlign: "center",
-                color: stage === "Kickoff." ? ACTIVE : "white",
+      {/* ---------- Pitch ---------- */}
+
+      <motion.svg
+        width={220}
+        height={300}
+        viewBox="0 0 220 300"
+        style={{
+          marginTop: 42,
+          overflow: "visible",
+        }}
+      >
+
+        {/* Outline */}
+
+        <rect
+          x="1"
+          y="1"
+          width="218"
+          height="298"
+          rx="6"
+          fill="none"
+          stroke={LINE}
+          strokeWidth="1.4"
+        />
+
+        {/* Half */}
+
+        <line
+          x1="1"
+          y1="150"
+          x2="219"
+          y2="150"
+          stroke={LINE}
+        />
+
+        {/* Center */}
+
+        <circle
+          cx="110"
+          cy="150"
+          r="28"
+          fill="none"
+          stroke={LINE}
+        />
+
+        <circle
+          cx="110"
+          cy="150"
+          r="2"
+          fill={LINE}
+        />
+
+        {/* Top Penalty */}
+
+        <rect
+          x="55"
+          y="1"
+          width="110"
+          height="45"
+          fill="none"
+          stroke={LINE}
+        />
+
+        <rect
+          x="80"
+          y="1"
+          width="60"
+          height="18"
+          fill="none"
+          stroke={LINE}
+        />
+
+        {/* Bottom Penalty */}
+
+        <rect
+          x="55"
+          y="254"
+          width="110"
+          height="45"
+          fill="none"
+          stroke={LINE}
+        />
+
+        <rect
+          x="80"
+          y="281"
+          width="60"
+          height="18"
+          fill="none"
+          stroke={LINE}
+        />
+
+        {/* ---------- PLAYERS ---------- */}
+
+        {PLAYERS.map((player) => {
+
+          const active =
+            progress >= player.activateAt;
+
+          return (
+
+            <motion.circle
+              key={player.id}
+              cx={player.x}
+              cy={player.y}
+              r={5}
+
+              initial={false}
+
+              animate={{
+                scale: active
+                  ? [0, 1.35, 1]
+                  : 1,
+
+                fill: active
+                  ? ACTIVE
+                  : INACTIVE,
               }}
-            >
-              {stage}
-            </motion.h1>
-          </AnimatePresence>
-        </div>
+
+              transition={{
+                duration: .45,
+              }}
+
+              style={{
+                transformOrigin: `${player.x}px ${player.y}px`,
+                filter: active
+                  ? "drop-shadow(0 0 6px rgba(143,185,150,.8))"
+                  : "none",
+              }}
+            />
+
+          );
+
+        })}
+
+      </motion.svg>
+
+      {/* ---------- Progress ---------- */}
+
+      <div
+        style={{
+          width: 220,
+          marginTop: 34,
+        }}
+      >
 
         <div
           style={{
-            position: "relative",
-            width: 220,
-            height: 300,
-            marginTop: 36,
+            height: 2,
+            borderRadius: 999,
+            overflow: "hidden",
+            background:
+              "rgba(255,255,255,.08)",
           }}
         >
-          <svg
-            width="220"
-            height="300"
-            viewBox="0 0 220 300"
-            style={{ position: "absolute", inset: 0 }}
-          >
-            <rect
-              x="1"
-              y="1"
-              width="218"
-              height="298"
-              rx="6"
-              fill="none"
-              stroke={PITCH_LINE}
-              strokeWidth="1.5"
-            />
-            <line
-              x1="1"
-              y1="150"
-              x2="219"
-              y2="150"
-              stroke={PITCH_LINE}
-              strokeWidth="1.5"
-            />
-            <circle
-              cx="110"
-              cy="150"
-              r="28"
-              fill="none"
-              stroke={PITCH_LINE}
-              strokeWidth="1.5"
-            />
-            <circle cx="110" cy="150" r="2" fill={PITCH_LINE} />
-          </svg>
 
-          {FORMATION.map((p) => {
-            const active = progress >= p.activateAt;
-            return (
-              <motion.div
-                key={p.id}
-                initial={false}
-                animate={
-                  active
-                    ? { opacity: 1, scale: [0, 1.25, 1] }
-                    : { opacity: 1, scale: 1 }
-                }
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                style={{
-                  position: "absolute",
-                  left: `${p.x}%`,
-                  top: `${p.y}%`,
-                  width: 10,
-                  height: 10,
-                  borderRadius: "50%",
-                  transform: "translate(-50%, -50%)",
-                  background: active ? ACTIVE : INACTIVE,
-                  boxShadow: active
-                    ? "0 0 10px rgba(143,185,150,.85)"
-                    : "none",
-                  transition: "background .3s ease, box-shadow .3s ease",
-                }}
-              />
-            );
-          })}
-        </div>
-
-        <div
-          style={{
-            position: "relative",
-            width: 220,
-            marginTop: 30,
-          }}
-        >
-          <div
+          <motion.div
+            animate={{
+              width: `${progress}%`,
+            }}
+            transition={{
+              ease: "easeOut",
+            }}
             style={{
-              position: "relative",
-              width: "100%",
-              height: 1,
-              background: PITCH_LINE,
+              height: "100%",
+              background: ACTIVE,
+            }}
+          />
+
+        </div>
+
+        <div
+          style={{
+            marginTop: 14,
+            display: "flex",
+            justifyContent:
+              "space-between",
+            color:
+              "rgba(255,255,255,.45)",
+            fontSize: 12,
+          }}
+        >
+
+          <span>Loading Assets</span>
+
+          <span>
+            {Math.round(progress)}%
+          </span>
+
+        </div>
+
+      </div>
+
+      {/* ---------- Music Prompt ---------- */}
+
+      <AnimatePresence>
+
+        {showMusicPrompt && (
+
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: 20,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            exit={{
+              opacity: 0,
+              y: -10,
+            }}
+            style={{
+              marginTop: 34,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 14,
             }}
           >
+
+            <span
+              style={{
+                color:
+                  "rgba(255,255,255,.6)",
+                fontSize: 13,
+              }}
+            >
+              Enter the stadium with music?
+            </span>
+
             <div
               style={{
-                position: "absolute",
-                left: "50%",
-                top: "50%",
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                border: `1px solid ${PITCH_LINE}`,
-                transform: "translate(-50%, -50%)",
+                display: "flex",
+                gap: 12,
               }}
-            />
-           
-          </div>
-        </div>
-      </div>
+            >
+
+              <button
+                onClick={() => {
+                  setEnabled(true);
+                  finishLoading();
+                }}
+                style={{
+                  border: `1px solid ${ACTIVE}`,
+                  padding:
+                    "10px 22px",
+                  borderRadius: 999,
+                  background:
+                    "rgba(143,185,150,.1)",
+                  color: ACTIVE,
+                  cursor: "pointer",
+                  fontWeight: 700,
+                }}
+              >
+                Yes
+              </button>
+
+              <button
+                onClick={() => {
+                  setEnabled(false);
+                  finishLoading();
+                }}
+                style={{
+                  border:
+                    "1px solid rgba(255,255,255,.15)",
+                  padding:
+                    "10px 22px",
+                  borderRadius: 999,
+                  background:
+                    "transparent",
+                  color:
+                    "rgba(255,255,255,.7)",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                No
+              </button>
+
+            </div>
+
+          </motion.div>
+
+        )}
+
+      </AnimatePresence>
+
     </div>
-  );
+
+  </div>
+);
+
 }

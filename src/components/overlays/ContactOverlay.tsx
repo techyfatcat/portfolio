@@ -15,7 +15,7 @@ type ExitLink = {
 
 const LINKS: ExitLink[] = [
   {
-    label: "Download Résumé",
+    label: "Download Resume",
     gate: "EXIT GATE 01",
     href: "https://res.cloudinary.com/eglidyow/image/upload/v1783916570/resume.pdf",
     icon: <FileText size={18} strokeWidth={1.75} />,
@@ -299,16 +299,6 @@ export default function ContactOverlay() {
             flexShrink: 0,
           }}
         >
-          <span
-            className="contactFooterNote"
-            style={{
-              color: "rgba(255,255,255,.35)",
-              fontSize: 12,
-              letterSpacing: 1,
-            }}
-          >
-            See you at the next match.
-          </span>
 
           <button
             onClick={() => moveTo("hero")}

@@ -5,11 +5,12 @@ import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import { useCameraStore } from "@/store/useCameraStore";
 import { CameraView } from "@/data/cameraViews";
 import { useIntroStore } from "@/store/useIntroStore";
+import { useMusicStore } from "@/store/useMusicStore";
 
 const ACCENT = "#c1f612";
 const MUSIC_HINT_KEY = "musicHintSeen";
 const TARGET_VOLUME = 0.12;
-const NAVBAR_HEIGHT = 58; // shared vertical reference every floating child centers against
+const NAVBAR_HEIGHT = 58; 
 
 const sections: { id: CameraView; label: string }[] = [
   { id: "hero", label: "Home" },
@@ -25,27 +26,6 @@ function formatClock(totalSeconds: number) {
   return `${m}:${s}`;
 }
 
-// Ramps an <audio> element's volume from 0 up to `target` over `duration` ms,
-// instead of snapping straight to full volume the instant playback starts.
-function fadeInAudio(audio: HTMLAudioElement, target: number, duration: number) {
-  const steps = 20;
-  const stepTime = duration / steps;
-  const increment = target / steps;
-  let current = 0;
-
-  audio.volume = 0;
-  const id = setInterval(() => {
-    current += increment;
-    if (current >= target) {
-      audio.volume = target;
-      clearInterval(id);
-    } else {
-      audio.volume = current;
-    }
-  }, stepTime);
-}
-
-// Renders one of the 3 hamburger bars, morphing into an "X" when open.
 function HamburgerLine({ index, open }: { index: 0 | 1 | 2; open: boolean }) {
   const base: React.CSSProperties = {
     position: "absolute",
@@ -88,9 +68,15 @@ export default function Navbar() {
   const entered = useCameraStore((s) => s.entered);
   const enter = useCameraStore((s) => s.enter);
   const introFinished = useIntroStore((s) => s.introFinished);
-  // Flips true once the hero announcement/loading sequence has fully
-  // finished (text + "Enter Stadium" button revealed).
   const heroAnnouncementDone = useIntroStore((s) => s.heroAnnouncementDone);
+
+  const enabled = useMusicStore(
+    s => s.enabled
+);
+
+const toggle = useMusicStore(
+    s => s.toggle
+);
 
   const handleNav = (id: CameraView) => {
     if (!entered) enter();
@@ -100,7 +86,6 @@ export default function Navbar() {
   const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const glowRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
 
   const [musicPlaying, setMusicPlaying] = useState(true);
   const [showMusicHint, setShowMusicHint] = useState(false);
@@ -109,20 +94,7 @@ export default function Navbar() {
 
   const cdControls = useAnimation();
 
-  // Default autoplay attempt (browsers will usually block this until the
-  // user interacts with the page at all, hence the .catch swallow below).
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    audio.volume = TARGET_VOLUME;
-
-    if (introFinished && musicPlaying) {
-      audio.play().catch(() => {});
-    } else {
-      audio.pause();
-    }
-  }, [introFinished, musicPlaying]);
+  
 
   useEffect(() => {
     if (!introFinished) return;
@@ -134,8 +106,6 @@ export default function Navbar() {
     return () => clearInterval(id);
   }, [introFinished]);
 
-  // One-time "pop" the instant the loading/announcement sequence finishes —
-  // separate from the repeating breathing animation below.
   useEffect(() => {
     if (!heroAnnouncementDone) return;
 
@@ -145,21 +115,6 @@ export default function Navbar() {
     });
   }, [heroAnnouncementDone, cdControls]);
 
-  // While the hint tooltip is up, breathe gently; once it's gone (or was
-  // never shown), settle back to a resting scale of 1.
-  useEffect(() => {
-    if (showMusicHint) {
-      cdControls.start({
-        scale: [1, 1.12, 1],
-        transition: { duration: 1.8, repeat: Infinity, ease: "easeInOut" },
-      });
-    } else if (heroAnnouncementDone) {
-      cdControls.start({ scale: 1, transition: { duration: 0.3 } });
-    }
-  }, [showMusicHint, heroAnnouncementDone, cdControls]);
-
-  // Show the hint once, shortly after the hero announcement/loading sequence
-  // has fully finished, unless the user has already dismissed it before.
   useEffect(() => {
     if (!heroAnnouncementDone) return;
 
@@ -172,39 +127,6 @@ export default function Navbar() {
 
     return () => clearTimeout(t);
   }, [heroAnnouncementDone]);
-
-  // Auto-hide the hint after 5 seconds if it's never interacted with.
-  useEffect(() => {
-    if (!showMusicHint) return;
-
-    const t = setTimeout(() => {
-      setShowMusicHint(false);
-    }, 5000);
-
-    return () => clearTimeout(t);
-  }, [showMusicHint]);
-
-  // Clicking the CD dismisses the hint for good and fades music in/out.
-  const toggleMusic = async () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (musicPlaying) {
-      audio.pause();
-      setMusicPlaying(false);
-    } else {
-      try {
-        await audio.play();
-        fadeInAudio(audio, TARGET_VOLUME, 1000);
-      } catch {
-        // autoplay/permissions issue — user will just see the CD not spin
-      }
-      setMusicPlaying(true);
-    }
-
-    setShowMusicHint(false);
-    localStorage.setItem(MUSIC_HINT_KEY, "true");
-  };
 
   const positionGlow = (id: string) => {
     const el = itemRefs.current[id];
@@ -251,9 +173,6 @@ export default function Navbar() {
         transition: "opacity .6s ease, transform .6s ease",
       }}
     >
-      {/* Team badge + live clock, floating on the left — desktop only.
-          top/translateY centers it against navbar-root's real height,
-          instead of relying on flex "static position" fallback. */}
       <div
         className="navbar-badge"
         style={{
@@ -327,7 +246,7 @@ export default function Navbar() {
         </span>
       </div>
 
-      {/* Hamburger toggle — mobile only, replaces the badge entirely */}
+
       <button
         className="navbar-mobile-toggle"
         onClick={() => setMobileMenuOpen((o) => !o)}
@@ -355,7 +274,6 @@ export default function Navbar() {
         </div>
       </button>
 
-      {/* Section pill, centered — desktop only */}
       <div
         ref={trackRef}
         className="navbar-pill"
@@ -422,8 +340,6 @@ export default function Navbar() {
         })}
       </div>
 
-      {/* CD music toggle + hint tooltip, floating on the right — visible on
-          every breakpoint, position/size handled by the media queries below */}
       <div
         className="navbar-cd-wrap"
         style={{
@@ -447,7 +363,6 @@ export default function Navbar() {
             cursor: "pointer",
             ...sharedGlass,
           }}
-          onClick={toggleMusic}
           title={musicPlaying ? "Pause Music" : "Play Music"}
         >
           <div
@@ -478,7 +393,6 @@ export default function Navbar() {
                 : "inset 0 0 4px rgba(255,255,255,.35)",
             }}
           >
-            {/* metallic overlay to mute the rainbow into a CD-like sheen */}
             <div
               style={{
                 position: "absolute",
@@ -489,8 +403,6 @@ export default function Navbar() {
                 mixBlendMode: "overlay",
               }}
             />
-
-            {/* thin reflective groove lines */}
             {[10, 16, 22, 28].map((r) => (
               <div
                 key={r}
@@ -507,8 +419,6 @@ export default function Navbar() {
                 }}
               />
             ))}
-
-            {/* diagonal light streak */}
             <div
               style={{
                 position: "absolute",
@@ -519,8 +429,6 @@ export default function Navbar() {
                 pointerEvents: "none",
               }}
             />
-
-            {/* center spindle hole */}
             <div
               style={{
                 position: "absolute",
@@ -538,7 +446,6 @@ export default function Navbar() {
             />
           </div>
 
-          {/* play/pause icon overlay, revealed on hover */}
           <div className="cd-icon-overlay">
             {musicPlaying ? (
               <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
@@ -553,48 +460,7 @@ export default function Navbar() {
           </div>
         </motion.div>
 
-        {/* hint tooltip, anchored to the left of the CD button */}
-        <AnimatePresence>
-          {showMusicHint && (
-            <motion.div
-              className="navbar-hint"
-              initial={{ opacity: 0, x: 20, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 20, scale: 0.95 }}
-              transition={{ duration: 0.35 }}
-              style={{
-                position: "absolute",
-                right: 70,
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "rgba(20,22,28,.92)",
-                backdropFilter: "blur(18px)",
-                WebkitBackdropFilter: "blur(18px)",
-                border: "1px solid rgba(255,255,255,.08)",
-                borderRadius: 14,
-                padding: "14px 18px",
-                width: 260,
-                maxWidth: "calc(100vw - 96px)",
-                pointerEvents: "none",
-                boxShadow: "0 16px 40px rgba(0,0,0,.35)",
-              }}
-            >
-              <div style={{ color: "white", fontWeight: 600, fontSize: 14 }}>
-                🎵 Enhance your matchday experience
-              </div>
-              <div
-                style={{
-                  marginTop: 6,
-                  color: "rgba(255,255,255,.6)",
-                  fontSize: 13,
-                  lineHeight: 1.5,
-                }}
-              >
-                Click the CD to play the stadium theme.
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
       </div>
 
       {/* Mobile dropdown menu — only ever rendered when open */}
@@ -666,8 +532,6 @@ export default function Navbar() {
           </>
         )}
       </AnimatePresence>
-
-      <audio ref={audioRef} src="/audio/music/stadium-theme.mp3" loop />
 
       <style>{`
         @keyframes spinCD{

@@ -21,8 +21,7 @@ const DUST = Array.from({ length: 8 }, (_, i) => ({
 
 export default function HeroOverlay() {
   const introFinished = useIntroStore((state) => state.introFinished);
-  // New: flips true once the announcement text + "Enter Stadium" button have
-  // fully finished revealing. Navbar waits on this before showing its hint.
+  
   const setHeroAnnouncementDone = useIntroStore((s) => s.setHeroAnnouncementDone);
   const enter = useCameraStore((s) => s.enter);
   const moveTo = useCameraStore((state) => state.moveTo);
@@ -39,13 +38,6 @@ export default function HeroOverlay() {
   const dingRef = useRef<HTMLAudioElement | null>(null);
   const chimeRef = useRef<HTMLAudioElement | null>(null);
   const hasChimed = useRef(false);
-
-  useEffect(() => {
-    dingRef.current = new Audio("/sounds/ding.mp3");
-    dingRef.current.volume = 0.35;
-    chimeRef.current = new Audio("/sounds/stadium-chime.mp3");
-    chimeRef.current.volume = 0.45;
-  }, []);
 
   const playSafely = (audio: HTMLAudioElement | null) => {
     if (!audio) return;

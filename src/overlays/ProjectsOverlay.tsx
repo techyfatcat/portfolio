@@ -100,7 +100,6 @@ export default function ProjectsOverlay({ projects, onSelectProject }: Props) {
             flexShrink: 0,
           }}
         >
-
           <h1
             style={{
               color: "white",
@@ -125,134 +124,160 @@ export default function ProjectsOverlay({ projects, onSelectProject }: Props) {
             minHeight: 0,
           }}
         >
-          {projects.map((project, i) => (
-            <motion.button
-              key={project.name}
-              onClick={() =>
-                onSelectProject ? onSelectProject(project) : openProject(project)
-              }
-              initial={{ opacity: 0, x: -25 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 + i * 0.06, duration: 0.4 }}
-              className="tunnelGate"
-              style={{
-                position: "relative",
-                overflow: "hidden",
-                display: "flex",
-                flexDirection: "column",
-                textAlign: "left",
-                borderRadius: 14,
-                border: "1px solid rgba(255,255,255,.08)",
-                background: "rgba(255,255,255,.02)",
-                cursor: "pointer",
-                padding: 0,
-                font: "inherit",
-                color: "inherit",
-              }}
-            >
-              {/* Left glowing strip */}
-              
+          {projects.map((project, i) => {
+            const tech = project.tech ?? [];
+            const tagline = project.tagline ?? "";
 
-              {project.image && (
-                <div
-                  style={{
-                    width: "100%",
-                    aspectRatio: "16 / 9",
-                    background: "#050608",
-                    overflow: "hidden",
-                  }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={project.image}
-                    alt={project.name}
+            return (
+              <motion.button
+                // Falls back to index if two projects ever share a name/link,
+                // so adding projects can never produce a duplicate-key bug.
+                key={project.link || `${project.name}-${i}`}
+                onClick={() =>
+                  onSelectProject ? onSelectProject(project) : openProject(project)
+                }
+                initial={{ opacity: 0, x: -25 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 + i * 0.06, duration: 0.4 }}
+                className="tunnelGate"
+                style={{
+                  position: "relative",
+                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column",
+                  flexShrink: 0, // never let cards get squashed as the list grows
+                  textAlign: "left",
+                  borderRadius: 14,
+                  border: "1px solid rgba(255,255,255,.08)",
+                  background: "rgba(255,255,255,.02)",
+                  cursor: "pointer",
+                  padding: 0,
+                  font: "inherit",
+                  color: "inherit",
+                }}
+              >
+                {project.image && (
+                  <div
                     style={{
                       width: "100%",
-                      height: "100%",
-                      objectFit: "contain",
+                      background: "#050608",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      padding: 12,
+                    }}
+                  >
+                    <img
+                      src={project.image}
+                      alt={project.name}
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        maxHeight: 150,
+                        objectFit: "contain",
+                        display: "block",
+                      }}
+                    />
+                  </div>
+                )}
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    padding: "clamp(14px,2.2vh,18px) clamp(16px,3vw,20px)",
+                    gap: 12,
+                  }}
+                >
+                  {/* flex: 1 + minWidth: 0 is the pairing that actually lets
+                      this column shrink to the space left by the arrow icon
+                      instead of ballooning to fit its own text content —
+                      without both, long names/taglines can push past the
+                      card edge and get silently clipped. */}
+                  <div style={{ flex: "1 1 0%", minWidth: 0, width: "100%" }}>
+                    <div
+                      style={{
+                        color: "white",
+                        fontWeight: 700,
+                        fontSize: "clamp(15px,2.2vw,17px)",
+                        lineHeight: 1.3,
+                        overflow: "hidden",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflowWrap: "anywhere",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {project.name}
+                    </div>
+
+                    {tagline && (
+                      <div
+                        style={{
+                          color: "rgba(255,255,255,.5)",
+                          fontSize: 12.5,
+                          marginTop: 4,
+                          lineHeight: 1.4,
+                          overflow: "hidden",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflowWrap: "anywhere",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {tagline}
+                      </div>
+                    )}
+
+                    {tech.length > 0 && (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: 6,
+                          marginTop: 10,
+                          width: "100%",
+                        }}
+                      >
+                        {/* Every tag renders — no hardcoded cap that quietly
+                            drops tags once a project has more than N. */}
+                        {tech.map((t) => (
+                          <span
+                            key={t}
+                            style={{
+                              fontSize: 10.5,
+                              color: ACCENT,
+                              background: "rgba(143,185,150,.1)",
+                              border: "1px solid rgba(143,185,150,.25)",
+                              borderRadius: 999,
+                              padding: "3px 9px",
+                              fontWeight: 600,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <ArrowUpRight
+                    size={20}
+                    strokeWidth={2}
+                    style={{
+                      color: "rgba(255,255,255,.5)",
+                      flexShrink: 0,
+                      marginTop: 2,
                     }}
                   />
                 </div>
-              )}
-
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "clamp(14px,2.2vh,18px) clamp(16px,3vw,20px)",
-                  gap: 12,
-                }}
-              >
-                <div style={{ minWidth: 0 }}>
-                  
-
-                  <div
-                    style={{
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: "clamp(15px,2.2vw,17px)",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {project.name}
-                  </div>
-
-                  <div
-                    style={{
-                      color: "rgba(255,255,255,.5)",
-                      fontSize: 12.5,
-                      marginTop: 4,
-                      lineHeight: 1.4,
-                      overflow: "hidden",
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                    }}
-                  >
-                    {project.tagline}
-                  </div>
-
-                  {project.tech.length > 0 && (
-                    <div
-                      style={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: 6,
-                        marginTop: 10,
-                      }}
-                    >
-                      {project.tech.slice(0, 4).map((t) => (
-                        <span
-                          key={t}
-                          style={{
-                            fontSize: 10.5,
-                            color: ACCENT,
-                            background: "rgba(143,185,150,.1)",
-                            border: "1px solid rgba(143,185,150,.25)",
-                            borderRadius: 999,
-                            padding: "3px 9px",
-                            fontWeight: 600,
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <ArrowUpRight
-                  size={20}
-                  strokeWidth={2}
-                  style={{ color: "rgba(255,255,255,.5)", flexShrink: 0 }}
-                />
-              </div>
-            </motion.button>
-          ))}
+              </motion.button>
+            );
+          })}
         </div>
 
         {/* Footer */}
@@ -307,10 +332,6 @@ export default function ProjectsOverlay({ projects, onSelectProject }: Props) {
           border-color:${ACCENT};
           background:rgba(143,185,150,.06);
           box-shadow:0 14px 32px rgba(0,0,0,.35);
-        }
-
-        .contactLinks::-webkit-scrollbar{
-          width: 4px;
         }
       `}</style>
     </motion.div>

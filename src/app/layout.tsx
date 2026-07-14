@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Bebas_Neue, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import BackgroundMusic from "@/components/BackgroundMusic";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -44,9 +45,10 @@ export default function RootLayout({
       className={`${inter.variable} ${bebasNeue.variable} ${jetbrainsMono.variable}`}
     >
       <body>
-        {children}
-        <div id="ui-root" />
-      </body>
+  <BackgroundMusic />
+  {children}
+  <div id="ui-root" />
+</body>
     </html>
   );
 }

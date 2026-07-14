@@ -21,7 +21,7 @@ export const projects: Project[] = [
   },
   {
     name: "INCOG",
-    tagline: "Full-stack exam prep platform with tiered company tracking",
+    tagline: "Community for placement prep with resources and tools",
     tech: ["Node.js", "MongoDB", "EJS", "React"],
     status: "COMPLETE",
     link: "https://github.com/yourname/incog",
@@ -29,4 +29,16 @@ export const projects: Project[] = [
       "Companies section with tier-aware cards, group creation flow, and a threaded-comment community page.",
     image: "/incog.png",
   },
+
+  {
+    name: "InterviewScope",
+    tagline: "AI-Powered platform for interview question preparation",
+    tech: ["Node.js", "MongoDB", "EJS", "React"],
+    status: "COMPLETE",
+    link: "https://github.com/yourname/",
+    description:
+      "Prepare for interviews through AI-powered mock sessions, analytics, and personalized learning recommendations.",
+    image: "/interviewScope.png",
+  },
+
 ];
