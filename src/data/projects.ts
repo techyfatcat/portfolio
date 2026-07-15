@@ -10,7 +10,7 @@ export type Project = {
 
 export const projects: Project[] = [
   {
-    name: "STADIUM",
+    name: "Portfolio",
     tagline: "3D football-themed portfolio built with R3F and Three.js",
     tech: ["Next.js", "R3F", "Three.js", "Zustand"],
     status: "LIVE",
@@ -20,7 +20,7 @@ export const projects: Project[] = [
     image: "/stadium.png",
   },
   {
-    name: "INCOG",
+    name: "Incog",
     tagline: "Community for placement prep with resources and tools",
     tech: ["Node.js", "MongoDB", "EJS", "React"],
     status: "COMPLETE",
