@@ -25,12 +25,41 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Aadit | Portfolio",
   description:
-    "Portfolio of Aadit — Full Stack Developer & AI Enthusiast. Experience the game.",
-  keywords: ["developer", "portfolio", "full stack", "react", "three.js"],
+    "Portfolio of Aadit — Full Stack Developer specializing in React, Next.js, Node.js and AI-powered applications.",
+   keywords: [
+    "Aadit Sarhadi",
+    "Portfolio",
+    "Full Stack Developer",
+    "React",
+    "Next.js",
+    "Node.js",
+    "Java",
+    "Software Engineer",
+    "Web Developer",
+  ],
+
+  authors: [
+    {
+      name: "Aadit Sarhadi",
+    },
+  ],
+
+  creator: "Aadit Sarhadi",
+
   openGraph: {
-    title: "Aadit | Portfolio",
-    description: "Experience the game.",
-    type: "website",
+    title: "Aadit Sarhadi",
+    description:
+      "Full Stack Developer specializing in React, Next.js, Node.js and AI-powered applications.",
+    url: "https://aaditsarhadi.in",
+    siteName: "Aadit Portfolio",
+    images: [
+  {
+    url: "/opengraph-image",
+    width: 1200,
+    height: 630,
+    alt: "Aadit Sarhadi Portfolio",
+  },
+],
   },
 };
 
